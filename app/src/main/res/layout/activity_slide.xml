@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingLeft="25dp"
+    android:paddingRight="85dp"
+    android:paddingTop="75dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/slidemenu_avatar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:src="@mipmap/icon_avatar" />
+
+        <TextView
+            android:id="@+id/slidemenu_qqnumber"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="5dp"
+            android:layout_toRightOf="@+id/slidemenu_avatar"
+            android:text="451380642"
+            android:textColor="#000000"
+            android:textSize="18dp" />
+
+        <ImageView
+            android:layout_width="25dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_marginTop="12dp"
+            android:src="@mipmap/slidemenu_qrcode_normal" />
+
+        <ImageView
+            android:id="@+id/slidemenu_signature"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/slidemenu_avatar"
+            android:layout_marginTop="12dp"
+            android:src="@mipmap/slidemenu_signature_nor" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/slidemenu_signature"
+            android:layout_marginLeft="10dp"
+            android:layout_toRightOf="@+id/slidemenu_signature"
+            android:text="总想搞个大新闻"
+            android:textColor="#bb000000"
+            android:textSize="14dp" />
+
+    </RelativeLayout>
+
+    <ListView
+        android:id="@+id/slidemenu_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="75dp"
+        android:layout_weight="1"
+        android:divider="@null"
+        android:dividerHeight="0dp"
+        android:scrollbars="none"
+        android:listSelector="#00000000"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:orientation="horizontal"
+        android:paddingBottom="15dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:text="设置"
+            android:textColor="#ffffff"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_marginLeft="80dp"
+            android:text="夜间"
+            android:textColor="#ffffff"/>
+
+    </LinearLayout>
+
+</LinearLayout>
