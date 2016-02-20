@@ -2,6 +2,7 @@ package com.example.SlideDragView;
 
 import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.FloatRange;
@@ -82,12 +83,14 @@ public class DragViewGroup extends FrameLayout {
 
     public DragViewGroup(Context context, AttributeSet attrs) {
         super(context, attrs);
+        initAttr(attrs);
         init();
         initHandler();
     }
 
     public DragViewGroup(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        initAttr(attrs);
         init();
         initHandler();
     }
@@ -248,6 +251,19 @@ public class DragViewGroup extends FrameLayout {
                 }
             }
         };
+    }
+
+    private void initAttr(AttributeSet attr) {
+        TypedArray typedArray = getContext().obtainStyledAttributes(attr, R.styleable.SlideDrag);
+        rangePercent = typedArray.getFloat(R.styleable.SlideDrag_range_percent, 0.8f);
+        openRangePercent = typedArray.getFloat(R.styleable.SlideDrag_open_range_percent, 0.3f);
+        closeRangePercent = typedArray.getFloat(R.styleable.SlideDrag_close_range_percent, 0.7f);
+        range = typedArray.getInt(R.styleable.SlideDrag_range, (int) (width * rangePercent));
+        openRange = typedArray.getInt(R.styleable.SlideDrag_open_range, (int) (range * openRangePercent));
+        closeRange = typedArray.getInt(R.styleable.SlideDrag_close_range, (int) (range * closeRangePercent));
+        slideViewOpenSpeed = typedArray.getFloat(R.styleable.SlideDrag_slide_speed, 0.5f);
+        typedArray.recycle();
+        typedArray = null;
     }
 
     @Override

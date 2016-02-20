@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="SlideDrag">
+        <attr name="range" format="integer" />
+        <attr name="range_percent" format="float" />
+        <attr name="open_range" format="integer" />
+        <attr name="open_range_percent" format="float" />
+        <attr name="close_range" format="integer" />
+        <attr name="close_range_percent" format="float" />
+        <attr name="slide_speed" format="float" />
+    </declare-styleable>
+
+</resources>
