@@ -44,6 +44,10 @@ public class MainActivity extends Activity {
     private void initViewByJava() {
         dragViewGroup = (DragViewGroup) findViewById(R.id.main_dragview);
         dragViewGroup.setSlideView(R.layout.activity_slide);
+        dragViewGroup.setRangePercent(0.4f);
+        dragViewGroup.setOpenRangePercent(0.4f);
+        dragViewGroup.setCloseRangePercent(0.5f);
+        dragViewGroup.setSlideOpenSpeed(0.8f);
         View slideView = dragViewGroup.getSlideView();
         adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, menuStr);
         ListView slideList = (ListView) slideView.findViewById(R.id.slidemenu_list);

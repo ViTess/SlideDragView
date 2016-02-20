@@ -2,7 +2,10 @@ package com.example.SlideDragView;
 
 import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.FloatRange;
+import android.support.annotation.IntDef;
 import android.support.annotation.LayoutRes;
 import android.support.v4.view.MarginLayoutParamsCompat;
 import android.support.v4.view.ViewCompat;
@@ -19,6 +22,17 @@ import android.widget.FrameLayout;
  * Created by trs on 2016/2/15.
  */
 public class DragViewGroup extends FrameLayout {
+    private final int HANDLER_UPDATE_RANGE = 0x01;
+    private final int HANDLER_UPDATE_OPENRANGE = 0x02;
+    private final int HANDLER_UPDATE_CLOSERANGE = 0x03;
+    private final int HANDLER_UPDATE_SLIDE_OPENSPEED = 0x04;
+
+    @IntDef({HANDLER_UPDATE_RANGE, HANDLER_UPDATE_OPENRANGE,
+            HANDLER_UPDATE_CLOSERANGE, HANDLER_UPDATE_SLIDE_OPENSPEED})
+    private @interface HandlerMsg {
+
+    }
+
     /**
      * 控件拖拽功能
      */
@@ -31,16 +45,19 @@ public class DragViewGroup extends FrameLayout {
      * mainView:主页<p>
      * slideView:侧边栏
      */
-    private View mainView, slideView = null;
+    private View mainView = null, slideView = null;
     private int width, height;
-    private int slideLeft;//计算好的slideView的原始left值
+    private int slideLeft;//计算好的slideView的原始left值，即关闭状态下的距离
     private int range;//mainView滑动打开后最终停留的位置距离屏幕左边的距离
     private int openRange;//mainView打开锁需要的最小距离
     private int closeRange;//mainView关闭所需要的最小距离
     private float rangePercent = 0.8f;//mainView打开距离的百分比
+    private float openRangePercent = 0.3f, closeRangePercent = 0.7f;
+    private float slideViewOpenSpeed = 0.5f;//侧边栏滑动时的跟随移动速度
     private Status status = Status.CLOSE;
     private Status lastStatus = Status.CLOSE;
     private OnDraggingListener listener;
+    private Handler handler;
 
     /**
      * 状态值
@@ -60,16 +77,19 @@ public class DragViewGroup extends FrameLayout {
     public DragViewGroup(Context context) {
         super(context);
         init();
+        initHandler();
     }
 
     public DragViewGroup(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
+        initHandler();
     }
 
     public DragViewGroup(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init();
+        initHandler();
     }
 
     private void init() {
@@ -150,7 +170,7 @@ public class DragViewGroup extends FrameLayout {
                     int left = mainView.getLeft();
                     if (left <= openRange) {
                         close();
-                    } else if (left >= closeRange) {
+                    } else if (left > closeRange) {
                         open();
                     } else {
                         if (status == Status.OPEN) {
@@ -208,14 +228,36 @@ public class DragViewGroup extends FrameLayout {
         dragHelper = ViewDragHelper.create(this, callback);
     }
 
+    private void initHandler() {
+        handler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                switch (msg.what) {
+                    case HANDLER_UPDATE_RANGE:
+                        openRange = (int) (range * openRangePercent);
+                        closeRange = (int) (range * closeRangePercent);
+                        setSlideViewDefaultLayout();
+                        break;
+                    case HANDLER_UPDATE_OPENRANGE:
+                        break;
+                    case HANDLER_UPDATE_CLOSERANGE:
+                        break;
+                    case HANDLER_UPDATE_SLIDE_OPENSPEED:
+                        setSlideViewDefaultLayout();
+                        break;
+                }
+            }
+        };
+    }
+
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
         width = mainView.getMeasuredWidth();
         height = mainView.getMeasuredHeight();
         range = (int) (width * rangePercent);
-        openRange = (int) (range * 0.3);
-        closeRange = (int) (range * 0.7);
+        openRange = (int) (range * openRangePercent);
+        closeRange = (int) (range * closeRangePercent);
     }
 
     /**
@@ -230,8 +272,7 @@ public class DragViewGroup extends FrameLayout {
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         if (slideView != null) {
-            slideLeft = (int) (-range * 0.5);
-            slideView.layout(slideLeft, 0, width + slideLeft, height);
+            setSlideViewDefaultLayout();
         }
         mainView.layout(0, 0, width, height);
     }
@@ -280,6 +321,18 @@ public class DragViewGroup extends FrameLayout {
         });
     }
 
+    private void sendMsg(@HandlerMsg int handlerMsg) {
+        handler.sendEmptyMessage(handlerMsg);
+    }
+
+    /**
+     * 设置SlideView在关闭状态下的原始位置设置
+     */
+    private void setSlideViewDefaultLayout() {
+        slideLeft = (int) (-range * slideViewOpenSpeed);
+        slideView.layout(slideLeft, 0, width + slideLeft, height);
+    }
+
     /**
      * 设置slideView的滑动效果
      *
@@ -287,8 +340,8 @@ public class DragViewGroup extends FrameLayout {
      */
     private void slideViewAnimator(int mainLeft) {
         //使用这种动画代码，view虽然移动了，但是实际上并没有移动，因此会导致部分地方滑动无效
-        //slideView.setTranslationX((float) (mainLeft * 0.5));
-        int newLeft = (int) (slideLeft + (mainLeft * 0.5));
+        //slideView.setTranslationX((float) (mainLeft * slideViewOpenSpeed));
+        int newLeft = (int) (slideLeft + (mainLeft * slideViewOpenSpeed));
         slideView.layout(newLeft, 0, width - newLeft, height);
     }
 
@@ -360,8 +413,7 @@ public class DragViewGroup extends FrameLayout {
      */
     public void setRange(int range) {
         this.range = range;
-        openRange = (int) (range * 0.3);
-        closeRange = (int) (range * 0.7);
+        sendMsg(HANDLER_UPDATE_RANGE);
     }
 
     public int getRange() {
@@ -373,6 +425,75 @@ public class DragViewGroup extends FrameLayout {
     }
 
     /**
+     * 设置打开侧边栏所需要滑动的最小距离
+     *
+     * @param openRange
+     */
+    public void setOpenRange(int openRange) {
+        this.openRange = openRange;
+        sendMsg(HANDLER_UPDATE_OPENRANGE);
+    }
+
+    public int getOpenRange() {
+        return openRange;
+    }
+
+    /**
+     * 按照与最终打开距离的百分比设置最小打开距离
+     *
+     * @param percent
+     */
+    public void setOpenRangePercent(@FloatRange(from = 0.0f, to = 1.0f) float percent) {
+        if (range > 0 && percent < closeRangePercent) {
+            openRangePercent = percent;
+            setOpenRange((int) (range * openRangePercent));
+        }
+    }
+
+    public float getOpenRangePercent() {
+        return openRangePercent;
+    }
+
+    /**
+     * 设置关闭侧边栏所需要滑动的最小距离
+     *
+     * @param closeRange
+     */
+    public void setCloseRange(int closeRange) {
+        this.closeRange = closeRange;
+        sendMsg(HANDLER_UPDATE_CLOSERANGE);
+    }
+
+    public int getCloseRange() {
+        return closeRange;
+    }
+
+    /**
+     * 根据与完全打开侧边栏的距离的百分比设置关闭侧边栏最小距离
+     *
+     * @param percent
+     */
+    public void setCloseRangePercent(@FloatRange(from = 0.0f, to = 1.0f) float percent) {
+        if (range > 0 && percent > openRangePercent) {
+            closeRangePercent = percent;
+            setCloseRange((int) (range * closeRangePercent));
+        }
+    }
+
+    public float getCloseRangePercent() {
+        return closeRangePercent;
+    }
+
+    public void setSlideOpenSpeed(@FloatRange(from = 0.0f, to = 1.0f) float speed) {
+        slideViewOpenSpeed = speed;
+        sendMsg(HANDLER_UPDATE_SLIDE_OPENSPEED);
+    }
+
+    public float getSlideOpenSpeed() {
+        return slideViewOpenSpeed;
+    }
+
+    /**
      * 设置侧边栏的View
      *
      * @param view
@@ -380,8 +501,7 @@ public class DragViewGroup extends FrameLayout {
     public void setSlideView(View view) {
         slideView = view;
         addView(slideView, 0);
-        slideLeft = (int) (-range * 0.5);
-        slideView.layout(slideLeft, 0, width + slideLeft, height);
+        setSlideViewDefaultLayout();
         slideView.setClickable(true);
     }
 
